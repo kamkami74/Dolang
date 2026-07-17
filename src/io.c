@@ -10,7 +10,7 @@ static int row, col;
 
 void init_file(char* fp){
     row = 1;
-    col = 1;
+    col = 0;
     if ( strlen(fp) != 0 ){
         File = fopen(fp,"r");
 

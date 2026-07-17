@@ -1,6 +1,9 @@
-#include <stdio.h>
 #include "include/lexer.h"
 #include "include/io.h"
+#include <stdio.h>
+#include <stdbool.h>
+
+bool silent = false;
 
 char c;
 int col,row;
@@ -8,12 +11,10 @@ int col,row;
 int main(int argc,char** argv){
     char* fp = "";
 
-    printf("%d\n",argc);
-
     if ( argc == 2){
         fp = argv[1];
-        puts(fp);
     }
 
     lexer_analyse(fp);
+    close_file();
 }

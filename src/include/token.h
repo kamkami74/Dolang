@@ -9,6 +9,8 @@ typedef enum token {
     TOKEN_MINUS,
     TOKEN_MUL,
     TOKEN_DIV,
+    TOKEN_INCR,
+    TOKEN_DECR,
     TOKEN_EOF,
     TOKEN_ERROR
 } token_t;

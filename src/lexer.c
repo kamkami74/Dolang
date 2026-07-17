@@ -4,7 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <stdbool.h>
 #include <string.h>
+
+extern bool silent;
 
 typedef enum {
     S_INIT,
@@ -23,14 +26,18 @@ typedef enum {
     CT_EOF,
 } Character_type;
 
+/* ------------------------------ */
+
 static lexeme_t Cl; // current lexeme
 static char cc; // current character
-static char msg[256];  
+static char msg[256]; // error message buffer
 static State s;
 
 static void recognize_lexeme();
 static void recognize_number();
 static void recognize_float();
+static void recognize_symbol();
+static void recognize_id();
 
 static void push_char();
 static void reset_lexeme();
@@ -42,84 +49,101 @@ static void lexical_error(const char* msg);
 
 static Character_type char_type(char c);
 
-
-void lexer_analyse(char* filepath){
-    init_lexer(filepath);
-    while( !lexer_done() ) 
-        lexer_advance();
-    close_file();
-}
+/* ------------------------------ */
 
 void init_lexer(char* filepath){
     s = S_INIT;
     init_file(filepath);
     Cl.str = malloc(sizeof(char) * 256);
+    cc = consume_char();
+}
+
+void lexer_analyse(char* filepath){
+    init_lexer(filepath);
+    while( !lexer_done() ){
+        lexer_advance();
+    }
+    free(Cl.str);
 }
 
 
-void lexer_advance(){
-    s = S_INIT;
+void lexer_advance(void){
+    reset_lexeme();
     recognize_lexeme();
 }
 
-lexeme_t current_lexeme(){
+lexeme_t current_lexeme(void){
     return Cl;
 }
 
-int lexer_done(){
+int lexer_done(void){
     return cc == EOF;
 }
 
-void lexeme_print(){
+void lexeme_print(void){
     switch(Cl.type){
         case TOKEN_INT:
-            printf("<%s>, string: %s,\t value: %d\n",
+            printf("<%s>\tstring: %s, value: %d\n",
                     token_to_str(Cl.type),
                     Cl.str,
                     Cl.ival);
         break;
         case TOKEN_FLOAT:
-            printf("<%s>, string: %s,\t value: %f\n",
+            printf("<%s>\tstring: %s, value: %f\n",
                     token_to_str(Cl.type),
                     Cl.str,
                     Cl.fval);
         break;
         default:
-            printf("<%s>, string: %s\n",
+            printf("<%s>\tstring: %s\n",
                     token_to_str(Cl.type),
                     Cl.str);
         break;
     }
 }
 
+/* ------------------------------ */
+
+
 static void recognize_lexeme(){
-    cc = consume_char();
-    if ( char_type(cc) == CT_EOF )
-        return;
 
     while ( is_whitespace(cc) ){
         cc = consume_char();
     }
 
     while( s != S_FINAL ){
-        push_char();
+        if ( s != S_ERROR )
+            push_char();
         switch(s){
             case S_INIT:
                 switch(char_type(cc)){
                     case CT_DIGIT:
+                        s = S_NUMBER;
+
                         Cl.type = TOKEN_INT;
                         Cl.row = get_row();
                         Cl.col = get_col();
                         Cl.ival = cc - '0';
-                        s = S_NUMBER;
+
                         cc = consume_char();
                         break;
                     case CT_EOF:
                         Cl.type = TOKEN_EOF;
                         s = S_FINAL;
                         break;
+                    case CT_SYMBOL:
+                        Cl.row = get_row();
+                        Cl.col = get_col();
+                        recognize_symbol();
+                        break;
+                    case CT_LETTER:
+                        Cl.row = get_row();
+                        Cl.col = get_col();
+                        s = S_ID;
+                    break;
                     default:
-                        s = S_FINAL;
+                        sprintf(msg, "Unexpected character '%c'",cc);
+                        s = S_ERROR;
                         break;
                 }
                 break;
@@ -130,16 +154,22 @@ static void recognize_lexeme(){
                 recognize_float();
                 break;
             case S_ERROR:
-                close_file();
-                exit(1);
+                Cl.row = get_row();
+                Cl.col = get_col();
+                lexical_error(msg);
+                cc = EOF;
+                s = S_FINAL;
+                return;
+            case S_ID:
+                recognize_id();
                 break;
             default:
                 s = S_FINAL;
             break;
         }
     }
-    lexeme_print();
-    reset_lexeme();
+    if ( !silent ) 
+        lexeme_print();
 }
 
 static void recognize_number(){
@@ -149,15 +179,13 @@ static void recognize_number(){
             cc = consume_char();
             break;
         case CT_LETTER:
-            s = S_ERROR;
             sprintf(msg,"Unexpected character '%c' after number %d",cc,Cl.ival);
-            lexical_error(msg);
+            s = S_ERROR;
             break;
         case CT_SYMBOL:
             if ( cc != '.' ){
-                s = S_ERROR;
                 sprintf(msg,"Unexpected symbol '%c' after number %d",cc,Cl.ival);
-                lexical_error(msg);
+                s = S_ERROR;
                 break;
             }
 
@@ -185,19 +213,17 @@ static void recognize_float(){
             cc = consume_char();
             break;
         case CT_LETTER:
-            if ( literal_count == 0 && cc == 'f' ){
+            if ( literal_count == 0 && (cc == 'f' || cc == 'F') ){
                 literal_count ++;
                 cc = consume_char();
                 break;
             }
-            s = S_ERROR;
             sprintf(msg,"Unexpected character '%c' after number %f",cc,Cl.fval);
-            lexical_error(msg);
+            s = S_ERROR;
             break;
         case CT_SYMBOL:
-            s = S_ERROR;
             sprintf(msg,"Unexpected symbol '%c' after number %f",cc,Cl.fval);
-            lexical_error(msg);
+            s = S_ERROR;
             break;
         default:
             literal_count = 0;
@@ -206,7 +232,60 @@ static void recognize_float(){
     }
 }
 
+static void recognize_symbol(){
+    switch(cc){
+        case '+':
+            Cl.type = TOKEN_PLUS;
+            cc = consume_char();
+            if ( cc == '+' ){
+                Cl.type = TOKEN_INCR;
+                push_char();
+                cc = consume_char();
+            }
+            s = S_FINAL;
+        break;
+        case '-':
+            Cl.type = TOKEN_MINUS;
+            cc = consume_char();
+            if ( cc == '-' ){
+                Cl.type = TOKEN_DECR;
+                push_char();
+                cc = consume_char();
+            }
+            s = S_FINAL;
+        break;
+        case '*':
+            Cl.type = TOKEN_MUL;
+            cc = consume_char();
+            s = S_FINAL;
+        break;
+        case '/':
+            Cl.type = TOKEN_DIV;
+            cc = consume_char();
+            s = S_FINAL;
+        break;
+        default:
+            s = S_FINAL;
+            break;
+    }
+}
+
+
+static void recognize_id(){
+    switch(char_type(cc)){
+        case CT_LETTER:
+            break;
+        case CT_SYMBOL:
+            break;
+        default:
+            s = S_ERROR;
+            sprintf(msg,"Unexpected char '%c' after '%s'",cc,Cl.str);
+            break;
+    }
+}
+
 static void reset_lexeme(){
+    s = S_INIT;
     Cl.ival = 0;
     Cl.str[0] = '\0';
     Cl.type = 0;
@@ -243,7 +322,10 @@ static void lexical_error(const char* msg){
    printf("Lexical error");
    FG_BG_RESET;
    printf(": \"%s\"\n",msg);
-   printf("\tin line %d\n",Cl.row);     
+   printf("\t%s\n",Cl.str);     
+   printf("\t^^^\n");     
+   printf("\tin line %d, ",Cl.row);     
+   printf("col %d\n" ,Cl.col);     
    printf("\tin file \"%s\"\n",get_filename());     
 }
 

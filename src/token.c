@@ -18,6 +18,10 @@ char* token_to_str(token_t t){
             return "MUL";
         case TOKEN_DIV:
             return "DIV";
+        case TOKEN_INCR:
+            return "INCR";
+        case TOKEN_DECR:
+            return "INCR";
         case TOKEN_EOF:
             return "EOF";
         default:

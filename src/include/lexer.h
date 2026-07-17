@@ -13,13 +13,14 @@ typedef struct lexeme {
     int row, col;
 } lexeme_t;
 
+void lexer_advance(void);
+int lexer_done(void);
+
 void init_lexer(char* filepath);
-void lexer_advance();
-int lexer_done();
-
-
 void lexer_analyse(char* filepath);
 
-void lexeme_print();
+void lexeme_print(void);
+
+lexeme_t current_lexeme(void);
 
 #endif
