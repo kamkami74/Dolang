@@ -2,6 +2,7 @@
 #include "include/utils.h"
 #include "include/io.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 static void rec_expr();
 static void rec_seq_term();
@@ -44,12 +45,20 @@ static void rec_seq_factor(){
 
 static void rec_factor(){
     switch( current_lexeme().type ){
+        case TOKEN_FLOAT:
         case TOKEN_INT:
             lexer_advance();
             break;
+        case TOKEN_OPAR:
+            lexer_advance(); rec_expr();
+            if ( current_lexeme().type == TOKEN_CPAR ){
+                lexer_advance();
+                return;
+            }
+            syntax_error("No closing parentheses");
+            break;
         default:
-            sprintf(msg,"Unexpected token '%s'",token_to_str(current_lexeme().type));
-            syntax_error(msg);
+            syntax_error("Unexpected token");
             break;
     }
 }
@@ -58,14 +67,14 @@ static void rec_suite_seq_term(){
     token_t t;
     if ( !rec_op1(&t) )
         return;
-    rec_suite_seq_term();
+    rec_term(); rec_suite_seq_term();
 }
 
 static void rec_suite_seq_factor(){
     token_t t;
     if ( !rec_op2(&t) )
         return;
-    rec_suite_seq_factor();
+    rec_factor(); rec_suite_seq_factor();
 }
 
 static int rec_op1(token_t* t){
@@ -103,4 +112,6 @@ static void syntax_error(const char* msg){
    printf("\tin line %d, ",current_lexeme().row);     
    printf("col %d\n" ,current_lexeme().col);     
    printf("\tin file \"%s\"\n",get_filename());     
+
+   lexer_terminate();
 }

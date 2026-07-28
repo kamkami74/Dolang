@@ -1,4 +1,5 @@
-#include "include/syntax_analyser.h"
+#include "include/syntax.h"
+#include "include/lexer.h"
 #include "include/io.h"
 #include <stdio.h>
 #include <stdbool.h>
@@ -17,5 +18,5 @@ int main(int argc,char** argv){
 
     init_syntax(fp);
     interpret();
-    close_file();
+    lexer_terminate();
 }

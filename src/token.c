@@ -21,7 +21,11 @@ char* token_to_str(token_t t){
         case TOKEN_INCR:
             return "INCR";
         case TOKEN_DECR:
-            return "INCR";
+            return "DECR";
+        case TOKEN_OPAR:
+            return "OPAR";
+        case TOKEN_CPAR:
+            return "CPAR";
         case TOKEN_EOF:
             return "EOF";
         default:

@@ -1,4 +1,11 @@
+# Executables
 bin/*
+
+# Object files
 *.o
 
+# Precompiled headers
+*.gch
+
+# Vim swap
 *.swp

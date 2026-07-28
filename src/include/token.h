@@ -11,6 +11,8 @@ typedef enum token {
     TOKEN_DIV,
     TOKEN_INCR,
     TOKEN_DECR,
+    TOKEN_OPAR,
+    TOKEN_CPAR,
     TOKEN_EOF,
     TOKEN_ERROR
 } token_t;

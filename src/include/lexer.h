@@ -23,4 +23,6 @@ void lexeme_print(void);
 
 lexeme_t current_lexeme(void);
 
+void lexer_terminate(void);
+
 #endif
