@@ -1,6 +1,7 @@
 #include "include/syntax.h"
 #include "include/lexer.h"
 #include "include/io.h"
+#include "include/ast.h"
 #include <stdio.h>
 #include <stdbool.h>
 
@@ -10,6 +11,7 @@ char c;
 int col,row;
 
 int main(int argc,char** argv){
+    Ast A = NULL;
     char* fp = "";
 
     if ( argc == 2){
@@ -17,6 +19,7 @@ int main(int argc,char** argv){
     }
 
     init_syntax(fp);
-    interpret();
+    interpret(&A);
+    Ast_print(A);
     lexer_terminate();
 }
