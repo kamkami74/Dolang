@@ -6,6 +6,7 @@
 #include <stdbool.h>
 
 bool silent = false;
+#define DEBUG 1
 
 char c;
 int col,row;

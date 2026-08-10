@@ -30,7 +30,7 @@ typedef enum {
 
 static lexeme_t Cl; // current lexeme
 static char cc; // current character
-static char msg[256]; // error message buffer
+static char* msg; // error message buffer
 static State s;
 
 static void recognize_lexeme();
@@ -147,7 +147,7 @@ static void recognize_lexeme(){
                         s = S_ID;
                     break;
                     default:
-                        sprintf(msg, "Unexpected character '%c'",cc);
+                        msg = "Unexpected character";
                         s = S_ERROR;
                         break;
                 }
@@ -172,8 +172,9 @@ static void recognize_lexeme(){
             break;
         }
     }
-    if ( !silent ) 
+#if DEBUG 
         lexeme_print();
+#endif
 }
 
 static void recognize_number(){
@@ -184,7 +185,7 @@ static void recognize_number(){
             cc = consume_char();
             break;
         case CT_LETTER:
-            sprintf(msg,"Unexpected character '%c' after number %d",cc,Cl.ival);
+            msg = "Unexpected character";
             s = S_ERROR;
             break;
         case CT_SYMBOL:
@@ -221,7 +222,7 @@ static void recognize_float(){
                 cc = consume_char();
                 break;
             }
-            sprintf(msg,"Unexpected character '%c' after number %f",cc,Cl.fval);
+            msg = "Unexpected character";
             s = S_ERROR;
             break;
         default:
@@ -289,7 +290,7 @@ static void recognize_id(){
             s = S_ID;
             break;
         case CT_SYMBOL:
-            sprintf(msg,"Unexpected char '%c' after '%s'",cc,Cl.str);
+            msg = "Unexpected Character";
             s = S_ERROR;
             break;
         default:

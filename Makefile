@@ -4,7 +4,7 @@ sources := $(wildcard src/*.c)
 objects := $(notdir $(sources:.c=.o))
 exec :=  bin/do
 test :=  bin/test_lexer bin/test_ast \
-		 bin/test_string
+		 bin/test_string bin/test_ll
 
 ##################################################
 
@@ -23,6 +23,9 @@ bin/test_lexer: test_lexer.o io.o lexer.o token.o
 	$(CC) -o $@ $^ $(CFLAGS)
 
 bin/test_ast: test_ast.o variable.o string.o ast.o
+	$(CC) -o $@ $^ $(CFLAGS)
+
+bin/test_ll: test_ll.o variable.o string.o linked_list.o
 	$(CC) -o $@ $^ $(CFLAGS)
 
 bin/test_string: test_string.o string.o
