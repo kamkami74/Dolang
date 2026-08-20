@@ -4,25 +4,36 @@
 #include <string.h>
 
 void test_create(string* s,char* str){
-    puts("creating string");
+    printf("creating string: ");
     *s = creastr(str);
-    assert( s->self ); printstr(s);
-    puts("string created");
+    assert( s->self );
+    puts("done");
 }
 
-void test_copy(string* s1,string* s2){
-    puts("copying string");
-    s1 = copystr(s1,s2);
-    assert(s1);
-    assert(s1->self && s1->self != s2->self );
-    assert(s1->len == s2->len && s1->n == s2->n );
-    puts("string created");
+void test_compare_same(string s1, string s2){
+    printf("comparing strings: ");
+    int same = samestr(s1,s2);
+    assert( same == 1 );
+    puts("done");
+}
+
+void test_compare_different(string s1, string s2){
+    printf("comparing strings: ");
+    int same = samestr(s1,s2);
+    assert( same == 0 );
+    puts("done");
 }
 
 int main(void){
-    string s1; string s2;
+    string s1, s2; 
     test_create(&s1,"Hello World!");
-    test_copy(&s2,&s1);
-    test_copy(&s1,&s2);
+    test_create(&s2,"Hello World!");
+
+    string i = itos(15213);
+    printstr(i);
+
+
+    //test_compare_different(s1,s2);
+
     return 0;
 }

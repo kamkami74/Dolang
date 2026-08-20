@@ -12,6 +12,10 @@ typedef struct list {
 t_list* create_list(void);
 
 int list_push(t_list** l,t_var val, string id);
+void list_update(t_list** l, t_var val, string id);
+
+t_list* list_lookup(t_list* l,string s);
+void list_print(t_list* l);
 
 int list_pop(t_list** l);
 

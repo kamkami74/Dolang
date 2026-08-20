@@ -9,3 +9,6 @@ bin/*
 
 # Vim swap
 *.swp
+
+# Valgrind
+*vgcore* 

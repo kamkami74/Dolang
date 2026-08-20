@@ -2,10 +2,8 @@
 #define STRING_H
 
 #include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
 
-#define MIN_STR_SIZE 16
 
 typedef struct {
     char* self;
@@ -15,9 +13,9 @@ typedef struct {
 
 
 string creastr(char* str);
-string* newstr(size_t n);
 string* copystr(string* s1, string* s2);
-void printstr(string* s);
-void strfree(string* s);
+int samestr(string s1, string s2);
+string itos(int n);
+void printstr(string s);
 
 #endif

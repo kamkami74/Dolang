@@ -15,21 +15,33 @@ static t_list* test_push(int n){
     printf("pushing %d variable(s) to list: ",n);
     t_list *l = NULL;
     t_var v;
+
     for ( int i = 0; i < n; i ++ ){ 
         assign_var(&v,VAL_INT,&i);
-        list_push(&l,v,creastr("H"));
+        list_push(&l,v,creastr("A"));
     }
+
     t_list* tmp = l;
     for ( int i = 0; i < n; i ++ ){ 
         assert(tmp);
-        tmp = tmp->next;
     }
     printf("done\n"); return l;
 }
 
+static t_list* test_lookup(t_list* l,string s){
+    printf("Id %s in list: ",s.self);
+    t_list* res = list_lookup(l,s);
+    if ( res != NULL ){
+        puts("found");
+        return res;
+    }
+    puts("not found");
+    return NULL;
+}
+
 static void test_pop(t_list** l,int n){
     assert( n > 0 );
-    printf("poping %d variable(s) to list: ",n);
+    printf("poping %d variable(s) from list: ",n);
     t_list* tmp = *l;
     for ( int i = 0; i < n; i ++ ){
         assert(tmp);
@@ -53,6 +65,7 @@ static void test_free(t_list** l){
 int main(void){
     test_create();
     t_list* l = test_push(100);
-    test_pop(&l,100);
+    test_pop(&l,1);
+    test_lookup(l,creastr("A"));
     test_free(&l);
 }

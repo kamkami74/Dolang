@@ -27,7 +27,7 @@ void print_var(t_var v){
             printf("%f",v.fval);
             break;
         case VAL_STR:
-            printstr(&v.str);
+            printstr(v.str);
             break;
         default:
             break;
